@@ -1,0 +1,86 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Tool Versions:</h2>
+IDE-Version: ¦ÌVision V5.38.0.0
+Copyright (C) 2022 ARM Ltd and ARM Germany GmbH. All rights reserved.
+License Information: aa a, aaa, LIC=SDA0P-MPDRZ-56PQ2-9H6IQ-E9BMZ-F4GW1
+ 
+Tool Versions:
+Toolchain:       MDK-ARM Plus  Version: 5.38.0.0
+Toolchain Path:  D:\work_soft\KeilCubeMxVs\MDK\Core\ARM\ARMCLANG\Bin
+C Compiler:      ArmClang.exe V6.19
+Assembler:       Armasm.exe V6.19
+Linker/Locator:  ArmLink.exe V6.19
+Library Manager: ArmAr.exe V6.19
+Hex Converter:   FromElf.exe V6.19
+CPU DLL:         SARMCM3.DLL V5.38.0.0
+Dialog DLL:      DCM.DLL V1.17.5.0
+Target DLL:      STLink\ST-LINKIII-KEIL_SWO.dll V3.1.0.0
+Dialog DLL:      TCM.DLL V1.56.4.0
+ 
+<h2>Project:</h2>
+D:\project\EleCon_project\balance_car\BalanceCar_Heiweilu\MDK-ARM\BalanceCar_Heiwelu.uvprojx
+Project File Date:  05/05/2024
+
+<h2>Output:</h2>
+*** Using Compiler 'V6.19', folder: 'D:\work_soft\KeilCubeMxVs\MDK\Core\ARM\ARMCLANG\Bin'
+Build target 'BalanceCar_Heiwelu'
+../bsp/my_main.c(1): warning: In file included from...
+../bsp/my_main.h(5): warning: In file included from...
+../Core/Inc/mpu6050.h(85): warning: redefinition of typedef 'u8' is a C11 feature [-Wtypedef-redefinition]
+typedef uint8_t u8;
+                ^
+../Core/Inc/eMPL\inv_mpu.h(131): note: previous definition is here
+typedef uint8_t u8;
+                ^
+../bsp/my_main.c(1): warning: In file included from...
+../bsp/my_main.h(5): warning: In file included from...
+../Core/Inc/mpu6050.h(86): warning: redefinition of typedef 'u16' is a C11 feature [-Wtypedef-redefinition]
+typedef uint16_t u16;
+                 ^
+../Core/Inc/eMPL\inv_mpu.h(132): note: previous definition is here
+typedef uint16_t u16;
+                 ^
+../bsp/my_main.c(88): warning: cast to 'uint8_t *' (aka 'unsigned char *') from smaller integer type 'uint8_t' (aka 'unsigned char') [-Wint-to-pointer-cast]
+        HAL_UARTEx_ReceiveToIdle_IT(&huart3, (uint8_t *)Usart3_RX_Buf,50);//Ê¹<C4>Ü´<AE><BF><DA>3<BD><D3><CA><D5><D6>Ð¶<CF>    
+                                             ^~~~~~~~~~~~~~~~~~~~~~~~
+../bsp/my_main.c(118): warning: illegal character encoding in string literal [-Winvalid-source-encoding]
+ printf("---------------MPU<B3><F5>Ê¼<BB><AF><B3>É¹<A6><A3><A1><A3><A1>---------------\r\n");
+                           ^~~~~~~~ ~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~
+../bsp/my_main.c(393): warning: cast to 'uint8_t *' (aka 'unsigned char *') from smaller integer type 'uint8_t' (aka 'unsigned char') [-Wint-to-pointer-cast]
+        HAL_UARTEx_ReceiveToIdle_IT(&huart3, (uint8_t *)Usart3_RX_Buf,50);
+                                             ^~~~~~~~~~~~~~~~~~~~~~~~
+5 warnings generated.
+compiling my_main.c...
+linking...
+Program Size: Code=40332 RO-data=3820 RW-data=76 ZI-data=1572  
+FromELF: creating hex file...
+"MPU6050\BalanceCar_Heiweilu.axf" - 0 Error(s), 5 Warning(s).
+
+<h2>Software Packages used:</h2>
+
+Package Vendor: ARM
+                http://www.keil.com/pack/ARM.CMSIS.5.9.0.pack
+                ARM.CMSIS.5.9.0
+                CMSIS (Common Microcontroller Software Interface Standard)
+   * Component: CORE Version: 5.6.0
+
+Package Vendor: Keil
+                https://www.keil.com/pack/Keil.STM32F1xx_DFP.2.4.1.pack
+                Keil.STM32F1xx_DFP.2.4.1
+                STMicroelectronics STM32F1 Series Device Support, Drivers and Examples
+
+<h2>Collection of Component include folders:</h2>
+  ./RTE/_BalanceCar_Heiwelu
+  D:/work_soft/KeilCubeMxVs/MDK/Packs/ARM/CMSIS/5.9.0/CMSIS/Core/Include
+  D:/work_soft/KeilCubeMxVs/MDK/Packs/Keil/STM32F1xx_DFP/2.4.1/Device/Include
+
+<h2>Collection of Component Files used:</h2>
+
+   * Component: ARM::CMSIS:CORE:5.6.0
+Build Time Elapsed:  00:00:01
+</pre>
+</body>
+</html>
