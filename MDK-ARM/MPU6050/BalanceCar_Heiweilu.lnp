@@ -28,6 +28,8 @@
 "mpu6050\system_stm32f1xx.o"
 "mpu6050\key.o"
 "mpu6050\my_main.o"
+"mpu6050\i2cs.o"
+"mpu6050\oled.o"
 --library_type=microlib --strict --scatter "MPU6050\BalanceCar_Heiweilu.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

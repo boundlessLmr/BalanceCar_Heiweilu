@@ -26,18 +26,29 @@ u8 Flag_forward = 0, Flag_retreat = 0, Flag_left = 0, Flag_right = 0;//À¶ÑÀÒ£¿Ø±
 unsigned char Usart_TX_Buf[40];
 
 
+float test_num = 10;
+uint8_t page = 0;
+
+//----Ö±Á¢»·-----
+float Bias, Vertical_Kp= 432,Vertical_Kd= 1.92;	//Ö±Á¢»·Kp,Kd¾ùÎªÕýÖµ (720  3.2) * 0.6 =  432    1.92
+
+//----ËÙ¶È»·-----
+ float Velocity,Encoder_Err,Encoder,Encoder_last,Movement=0; //ËÙ¶È£¬Îó²î£¬±àÂëÆ÷
+ float Encoder_Integral;					  //±àÂëÆ÷ÊýÖµ»ý·Ö
+ float kp=40,ki=0.2;	
+
+
 //----×Óº¯ÊýÉùÃ÷-----
 void UART_Proc(void);
 //void	go();
 //void	stop();
 //void	backward();
 int Vertical(float Angle,float Gyro_Y);			 				//Ö±Á¢»·
-int Velocity(int Encoder_left,int Encoder_right);				//ËÙ¶È»·
+int GetVelocity(int Encoder_left,int Encoder_right);				//ËÙ¶È»·
 int Turn(int Encoder_Left,int Encoder_Right,float gyro);	//×ªÏò»·
 u8 Stop(signed int angle);    		//µ¹ÏÂ±£»¤
 void Limit(int *motoA,int *motoB);  //µç»úËÙ¶ÈÏÞ·ù
 void Set_Pwm(int Moto1,int Moto2);	//¿ØÖÆPWM×îÖÕÊä³ö
-	
 
 
 
@@ -45,33 +56,114 @@ u8 test111 = 0;
 
 void key_proc(void)
 {
-	
-	
 /*¶Ì°´*/	
 	if(bkey[2].short_flag)
 	{
-		printf("short2 ok\n\r");
+//		Vertical_Kd -= test_num;
+		kp -= test_num;
+		ki = kp/200;
+		
 		bkey[2].short_flag = 0;
 	}
 	if(bkey[1].short_flag)
 	{	
-		printf("short1 ok\n\r");		
+//		Vertical_Kd += test_num;
+		kp += test_num;
+		ki = kp/200;
+		
 		bkey[1].short_flag = 0;
 	}		
 /*³¤°´*/	
 	if(bkey[2].long_flag)
 	{
+		page++;
+		if(page == 2)page = 0;
+    OLED_Clear();		
 		
-		printf("long2 ok\n\r");			
 		bkey[2].long_flag = 0;
 	}
 	if(bkey[1].long_flag)
 	{
-		printf("long1 ok\n\r");				
+		if(test_num == 1)test_num = 10;
+		else test_num = 10;	
+		
 		bkey[1].long_flag = 0;		
 	}	
 	
 }
+/**************************************************************************
+º¯Êý¹¦ÄÜ£ºÍ¨¹ý´®¿Ú²âÊÔÊý¾Ý
+**************************************************************************/
+void UART_Proc()
+{
+//  if((uwTick - uwTick_UART) < 1000) return;//return;½áÊøº¯Êý
+//	uwTick_UART = uwTick;
+//	
+//	printf("kP:%.2f,kD:%.2f,flag:%d,num:%.2f\r\n",Vertical_Kp,Vertical_Kd,Start_Flag,test_num);
+//	
+//	printf("-------------------------------------------\r\n");	
+//  if ((mpu_dmp_get_data(&Pitch, &Roll, &Yaw) == 0) && (MPU_Get_Gyroscope(&gyrox,&gyroy,&gyroz) == 0)) //DMP¶ÁÈ¡Å·À­½Ç£¬digital motion processorÊý×ÖÔË¶¯´¦ÀíÆ÷
+//   {
+//		//¸©Ñö½Ç£¬ºá¹ö½Ç£¬Æ«º½½Ç
+//		 printf("pitch=%.3f   roll=%.3f   yaw=%.3f \r\n", Pitch, Roll, Yaw);   //´®¿Ú´òÓ¡Å·À­½Ç
+//  	 printf("gyrox=%d   gyroy=%d  gyroz=%d \r\n", gyrox, gyroy, gyroz);	// ½ÇËÙ¶È
+//		 printf("-------------------------------------------\r\n");
+//			
+//	 }
+
+//	 printf("Vertical_out=%d",Vertical_out);
+}
+
+void oled_proc()
+{//ÐÐx:0~127    ÁÐy:0~63
+	if(page == 0)
+	{
+//		//============= µÚÒ»ÐÐ µ÷Ö±Á¢»·=======================//	
+//			OLED_ShowString(00,00,"P:",12);                   
+//			OLED_ShowFNum(24,00,Vertical_Kp,12);
+//		//=============  µÚ¶þÐÐ=======================//	
+//			OLED_ShowString(00,12,"D:",12);                   
+//			OLED_ShowFNum(24,12,Vertical_Kd,12);
+//		//=============  µÚÈýÐÐ=======================//	
+//			OLED_ShowString(00,24,"ro:",12);
+//		  OLED_ShowFNum(36,24,Roll,12);
+//		//=============  µÚËÄÐÐ=======================//	
+//			OLED_ShowString(00,36,"gx:",12);
+//		  OLED_ShowFNum(36,36,gyrox,12);	
+//		//=============  µÚ5ÐÐ=======================//	
+//			OLED_ShowString(00,48,"vp:",12);
+//		  OLED_ShowFNum(36,48,Vertical_out,12);			
+//		
+//			OLED_Refresh();			
+		
+
+		//============= µÚÒ»ÐÐ µ÷ËÙ¶È»·=======================//	
+			OLED_ShowString(00,00,"P:",12);                   
+			OLED_ShowFNum(24,00,kp,12);
+		//=============  µÚ¶þÐÐ=======================//	
+			OLED_ShowString(00,12,"i:",12);                   
+			OLED_ShowFNum(24,12,ki,12);
+		//=============  µÚÈýÐÐ=======================//	
+			OLED_ShowString(00,24,"le:",12);
+		  OLED_ShowSignedNum(24,24,Encoder_Left,4,12);
+		//=============  µÚËÄÐÐ=======================//	
+			OLED_ShowString(00,36,"ri:",12);
+		  OLED_ShowSignedNum(24,36,Encoder_Right,4,12);
+		//=============  µÚ5ÐÐ=======================//		
+		  OLED_ShowFNum(00,48,Roll,12);	  OLED_ShowFNum(60,48,PWM_out,12);	 
+		//=============  µÚ6ÐÐ=======================//		
+//			OLED_ShowString(00,60,"pwm",12);
+//		  OLED_ShowFNum(36,60,PWM_out,12);	
+
+			OLED_Refresh();					
+		
+	}
+	else if(page == 1)
+	{
+	
+	}
+}
+
 void set_up(void)
 {
   //Æô¶¯TIM³õÊ¼»¯
@@ -86,24 +178,11 @@ void set_up(void)
 	 HAL_TIM_Encoder_Start(&htim4,TIM_CHANNEL_2);	
 
 	HAL_UARTEx_ReceiveToIdle_IT(&huart3, (uint8_t *)Usart3_RX_Buf,50);//Ê¹ÄÜ´®¿Ú3½ÓÊÕÖÐ¶Ï	 
-	 
-
-	//------MPU6050²âÊÔ-----
-//   printf("Mpu6050 Project Start\r\n");
-
-  //----iic¶ÁÈ¡MUPÆ÷¼þID----
-  uint8_t recv = 0x00;
-  HAL_I2C_Mem_Read(&hi2c1, (0x68 << 1), 0x75, I2C_MEMADD_SIZE_8BIT, &recv, 1, 0xfff);//¾ä±ú£¬MUPµØÖ·,Æ÷¼þID¼Ä´æÆ÷
-  
-//  if (recv == 0x68)
-//  {
-//    printf("mpu6050 ID Read: OK at 0x68\r\n");	  
-//  }
-//  else
-//  {
-//    printf("Err mpu id:0x%x\r\n", recv);  
-//  }  	 
-
+	
+		OLED_Init();	
+  	OLED_Clear();	
+	
+  	   printf("usart ok\r\n");
   //-----DMP³õÊ¼»¯----
   while(mpu_dmp_init())//³É¹¦·µ»Ø0£¬·ñÔò·µ»Ø1
   {
@@ -115,18 +194,18 @@ void set_up(void)
 
   }
 
- printf("---------------MPU³õÊ¼»¯³É¹¦£¡£¡---------------\r\n");
+ printf("---------------MPU init ok---------------\r\n");
  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0); //´ò¿ªPC13 LED
  Start_Flag = 1; //±êÖ¾ÏµÍ³³õÊ¼»¯³É¹¦
-
-
+	
 
 }
 
 void loop(void)
 {
-		UART_Proc();
+	UART_Proc();
 	key_proc();
+	oled_proc();
 }
 
 /**************************************************************************
@@ -139,17 +218,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   {
 		// 1.²É¼¯±àÂëÆ÷Êý¾Ý&MPU6050½Ç¶ÈÐÅÏ¢
    // µç»úÊÇÏà¶Ô°²×°£¬¸ÕºÃÏà²î180¶È£¬ÎªÁË±àÂëÆ÷Êä³ö¼«ÐÔÒ»ÖÂ£¬¾ÍÐèÒª¶ÔÆäÖÐÒ»¸öÈ¡·´  	
-//		test111 =8;
 	  mpu_dmp_get_data(&Pitch,&Roll,&Yaw);	    // ¶ÁÈ¡½Ç¶È
     MPU_Get_Gyroscope(&gyrox,&gyroy,&gyroz);  // ¶ÁÈ¡½ÇËÙ¶È
     MPU_Get_Accelerometer(&aacx,&aacy,&aacz); // ¶ÁÈ¡¼ÓËÙ¶È
 
-//	  Encoder_Left  =   Read_Encoder(3);		//¶ÁÈ¡±àÂëÆ÷²âÁ¿µÄµç»ú×ªËÙ
-//		Encoder_Right =   Read_Encoder(4);		
+	  Encoder_Left  =   Read_Encoder(3);		//¶ÁÈ¡±àÂëÆ÷²âÁ¿µÄµç»ú×ªËÙ
+		Encoder_Right =   Read_Encoder(4);		
 
   // 2.½«Êý¾ÝÑ¹Èë±Õ»·¿ØÖÆÖÐ£¬¼ÆËã³ö¿ØÖÆÊä³öÁ¿
-//	  Velocity_out = Velocity(Encoder_Left,Encoder_Right);// ËÙ¶È»·Êä³öÎó²î  
-	  Vertical_out = Vertical(Roll,gyrox+62);// Ö±Á¢»·Êä³öPWM
+	  Velocity_out = GetVelocity(Encoder_Left,Encoder_Right);// ËÙ¶È»·Êä³öÎó²î  
+	  Vertical_out = Vertical(Roll,gyrox);// Ö±Á¢»·Êä³öPWM
 //		
 	  // -------------À¶ÑÀ¿ØÖÆ--------------
 //	  if(1==Flag_left||1==Flag_right)    
@@ -159,15 +237,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 //	  
 //	  
 		//------------×îÖÕÊä³ö----------------
-//	  PWM_out= Vertical_out+Velocity_out;
-		PWM_out= Vertical_out;
+	  PWM_out= Vertical_out+Velocity_out;
 	  // 3.°Ñ¿ØÖÆÊä³öÁ¿¼ÓÔØµ½µç»úÉÏ£¬Íê³É×îÖÕ¿ØÖÆ
 //		Moto1 = PWM_out+Turn_Pwm; // ×óµç»ú
 //      Moto2 = PWM_out-Turn_Pwm; // ÓÒµç»ú  
 			Moto1 = PWM_out; // ×óµç»ú
       Moto2 = PWM_out; // ÓÒµç»ú  
       Limit(&Moto1,&Moto1);     // PWMÏÞ·ù 
-//		  Set_Pwm(Moto1,Moto2);        // ¼ÓÔØµ½µç»úÉÏ 
+		  Set_Pwm(Moto1,Moto2);        // ¼ÓÔØµ½µç»úÉÏ 
   }
 	key_serv_long();
 }
@@ -179,8 +256,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 ******************************************************************************/
 int Vertical(float Angle,float Gyro_Y) 
 {
-	float Bias, Vertical_Kp= -550,Vertical_Kd= -02;	//Ö±Á¢»·Kp,Kd
-	Bias = Angle-0.25;//Ö±Á¢Æ«²î
+
+	Bias = Angle-(-0.23);//Ö±Á¢Æ«²î //angle = -0.23¾ÍÆ½ºâÁË
 	PWM_out = Vertical_Kp*Bias+Vertical_Kd*(Gyro_Y-0);	
 	return PWM_out;	
 } 
@@ -191,14 +268,8 @@ int Vertical(float Angle,float Gyro_Y)
 Èë¿Ú£º×óÓÒ±àÂëÆ÷²âµ½µÄÊýÖµ
 ³ö¿Ú£º                   
 **********************************************************************/
-int Velocity(int Encoder_left,int Encoder_right)	
+int GetVelocity(int Encoder_left,int Encoder_right)	
 {
-	// ¶¨Òå³É¾²Ì¬±äÁ¿£¬±£´æÔÚ¾²Ì¬´æ´¢Æ÷£¬Ê¹µÃ±äÁ¿²»¶ªµô
-	static float Velocity,Encoder_Err,Encoder,Encoder_last,Movement=0; //ËÙ¶È£¬Îó²î£¬±àÂëÆ÷
-	static float Encoder_Integral;					  //±àÂëÆ÷ÊýÖµ»ý·Ö
-		
-	
-	float kp=10,ki=0.05;	
 	
 	//--------------À¶ÑÀ¿ØÖÆ----------------
 	if(1==Flag_forward) 		    Movement = -200;
@@ -207,7 +278,7 @@ int Velocity(int Encoder_left,int Encoder_right)
 	
 	
 	// 1.¼ÆËãËÙ¶ÈÆ«²î 	
-	Encoder_Err = ((Encoder_Left+Encoder_Right)-0);	
+	Encoder_Err = ((Encoder_Left+Encoder_Right)-0);	//ËÙ¶ÈÄ¿±êÖµ//Encoder_Left+Encoder_Right ×î´óÊÇ 160  7200 /£¨160 * 50%£© = 90
  
 	// 2.¶ÔËÙ¶ÈÆ«²î½øÐÐ--µÍÍ¨ÂË²¨--
   // low_out = (1-a)*Ek+a*low_out_last	
@@ -320,10 +391,10 @@ void Set_Pwm(int Moto1,int Moto2)
 {
 	
 	 int dead_zone = 3000 ;		//L298N¿ØÖÆËÀÇø 0 - 3000
-//	 Moto_Flag=Stop(Roll);	//»ñÈ¡ÊÇ·ñµ¹ÏÂµÄ±êÖ¾
+	 Moto_Flag=Stop(Roll);	//»ñÈ¡ÊÇ·ñµ¹ÏÂµÄ±êÖ¾
 	if(Start_Flag == 1)		//Ò»¼¶ÅÐ¶ÏÏµÍ³ÊÇ·ñÕý³£³õÊ¼»¯
 	{
-		if(1)	//¶þ¼¶ÅÐ¶Ï//Moto_Flag==0
+		if(Moto_Flag==0)	//¶þ¼¶ÅÐ¶Ï//
 		{
 			if(Moto1>0)  AIN1 = 1,AIN2 = 0;		
 			else			 AIN1 = 0,AIN2 = 1;				
@@ -391,41 +462,4 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 //        break;
 //    }
 	HAL_UARTEx_ReceiveToIdle_IT(&huart3, (uint8_t *)Usart3_RX_Buf,50);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**************************************************************************
-º¯Êý¹¦ÄÜ£ºÍ¨¹ý´®¿Ú²âÊÔÊý¾Ý
-**************************************************************************/
-void UART_Proc()
-{
-  if((uwTick - uwTick_UART) < 1000) return;//return;½áÊøº¯Êý
-	uwTick_UART = uwTick;
-	
-//	//	printf("%d\r\n",PWM_out);
-//	printf("-------------------------------------------\r\n");	
-//  if ((mpu_dmp_get_data(&Pitch, &Roll, &Yaw) == 0) && (MPU_Get_Gyroscope(&gyrox,&gyroy,&gyroz) == 0)) //DMP¶ÁÈ¡Å·À­½Ç£¬digital motion processorÊý×ÖÔË¶¯´¦ÀíÆ÷
-//   {
-//		//¸©Ñö½Ç£¬ºá¹ö½Ç£¬Æ«º½½Ç
-//		 printf("pitch=%.3f   roll=%.3f   yaw=%.3f \r\n", Pitch, Roll, Yaw);   //´®¿Ú´òÓ¡Å·À­½Ç
-//  	 printf("gyrox=%d   gyroy=%d  gyroz=%d \r\n", gyrox, gyroy, gyroz);	// ½ÇËÙ¶È
-//		 printf("-------------------------------------------\r\n");
-//			
-//	 }
-//	 
-//	 printf("left:%d\r\n", Encoder_Left);	
-//	 printf("right:%d\r\n", Encoder_Right);	
-//	 printf("Vertical_out=%d",Vertical_out);
-printf("%d\r\n",test111);
 }

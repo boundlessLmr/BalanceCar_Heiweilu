@@ -427,7 +427,7 @@ uint32_t Read_Encoder(uint8_t TIMX)	//编码器控制周期10ms
 				  __HAL_TIM_SET_COUNTER(&htim4,0);							//将定时器的计数值清零
 		break;	
 		
-		case 3: Encoder_TIM = (short)__HAL_TIM_GET_COUNTER(&htim3);
+		case 3: Encoder_TIM = -((short)__HAL_TIM_GET_COUNTER(&htim3));
 					__HAL_TIM_SET_COUNTER(&htim3,0);
 		break;
 		

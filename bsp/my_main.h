@@ -7,6 +7,8 @@
 #include "inv_mpu_dmp_motion_driver.h"
 #include "key.h"
 #include "stdio.h"
+#include "OLED.h"
+#include "stdlib.h"
 
 #include "main.h"
 #include "i2c.h"
@@ -17,6 +19,5 @@
 void set_up(void);
 void loop(void);
 
-extern uint8_t test111;
 #endif
 
