@@ -17,17 +17,50 @@ Library Manager: ArmAr.exe V5.06 update 4 (build 422)
 Hex Converter:   FromElf.exe V5.06 update 4 (build 422)
 CPU DLL:         SARMCM3.DLL V5.38.0.0
 Dialog DLL:      DCM.DLL V1.17.5.0
-Target DLL:      STLink\ST-LINKIII-KEIL_SWO.dll V3.1.0.0
+Target DLL:      CMSIS_AGDI.dll V1.33.15.0
 Dialog DLL:      TCM.DLL V1.56.4.0
  
 <h2>Project:</h2>
 D:\project\EleCon_project\balance_car\BalanceCar_Heiweilu\MDK-ARM\BalanceCar_Heiwelu.uvprojx
-Project File Date:  05/07/2024
+Project File Date:  05/09/2024
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 4 (build 422)', folder: 'D:\work_soft\KeilCubeMxVs\MDK\Core\ARM\ARMCC\Bin'
 Build target 'BalanceCar_Heiwelu'
-"MPU6050\BalanceCar_Heiweilu.axf" - 0 Error(s), 0 Warning(s).
+compiling my_main.c...
+..\bsp\my_main.c(261): warning:  #188-D: enumerated type mixed with another type
+   HAL_GPIO_WritePin(
+PIOC, 
+PIO_PIN_13, 0); //打开PC13 LED
+..\bsp\my_main.c(380): warning:  #177-D: variable "Bias"  was declared but never referenced
+     float Turn_Target,Turn_PWM,Bias,Encoder_temp,Turn_Convert=70,Turn_Count; 
+..\bsp\my_main.c(380): warning:  #177-D: variable "Encoder_temp"  was declared but never referenced
+     float Turn_Target,Turn_PWM,Bias,Encoder_temp,Turn_Convert=70,Turn_Count; 
+..\bsp\my_main.c(380): warning:  #177-D: variable "Turn_Count"  was declared but never referenced
+     float Turn_Target,Turn_PWM,Bias,Encoder_temp,Turn_Convert=70,Turn_Count; 
+..\bsp\my_main.c(416): warning:  #188-D: enumerated type mixed with another type
+  	HAL_GPIO_WritePin(
+PIOB, 
+PIO_PIN_15, BIN1);
+..\bsp\my_main.c(417): warning:  #188-D: enumerated type mixed with another type
+  	HAL_GPIO_WritePin(
+PIOB, 
+PIO_PIN_14, BIN2);
+..\bsp\my_main.c(419): warning:  #188-D: enumerated type mixed with another type
+  	HAL_GPIO_WritePin(
+PIOB, 
+PIO_PIN_13, AIN1);
+..\bsp\my_main.c(420): warning:  #188-D: enumerated type mixed with another type
+  	HAL_GPIO_WritePin(
+PIOB, 
+PIO_PIN_12, AIN2);	
+..\bsp\my_main.c(455): warning:  #177-D: variable "dead_zone"  was declared but never referenced
+  	 int dead_zone = 3000 ;		//L298N控制死区 0 - 3000
+..\bsp\my_main.c: 9 warnings, 0 errors
+linking...
+Program Size: Code=34016 RO-data=12400 RW-data=232 ZI-data=2656  
+FromELF: creating hex file...
+"MPU6050\BalanceCar_Heiweilu.axf" - 0 Error(s), 9 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -50,7 +83,7 @@ Package Vendor: Keil
 <h2>Collection of Component Files used:</h2>
 
    * Component: ARM::CMSIS:CORE:5.6.0
-Build Time Elapsed:  00:00:00
+Build Time Elapsed:  00:00:01
 </pre>
 </body>
 </html>

@@ -26,18 +26,34 @@ u8 Flag_forward = 0, Flag_retreat = 0, Flag_left = 0, Flag_right = 0;//À¶ÑÀÒ£¿Ø±
 unsigned char Usart_TX_Buf[40];
 
 
-float test_num = 10;
-uint8_t page = 0;
+//----µ÷²ÎÑ¡Ôñ-----// 
+#define TIAO_VERp          0
+#define TIAO_VERd          1
+#define TIAO_VELp          2
 
-//----Ö±Á¢»·-----
-float Bias, Vertical_Kp= 432,Vertical_Kd= 1.92;	//Ö±Á¢»·Kp,Kd¾ùÎªÕýÖµ (720  3.2) * 0.6 =  432    1.92
+uint8_t Tiao_Who = TIAO_VELp;
+float test_num_VERp = 10;
+float test_num_VERd = 1;
+float test_num_VELp = 0.1;
+
+
+
+//----Ö±Á¢»·-----// 
+float Bias, Vertical_Kp= 288,Vertical_Kd= 1.38;
+float Med = - 5.5;
+
+//Ö±Á¢»·Kp,Kd¾ùÎªÕýÖµ (480  2.3) * 0.6 =  288    1.38  
+//Ö±Á¢»·Kp,Kd¾ùÎªÕýÖµ (480  2.2) * 0.6 =  288    1.32  !
+//Ö±Á¢»·Kp,Kd¾ùÎªÕýÖµ (600  2.4) * 0.6 =  360    1.44  X
+//Ö±Á¢»·Kp,Kd¾ùÎªÕýÖµ (650  2.5) * 0.6 =  390    1.5   X
+//float Bias, Vertical_Kp= 0,Vertical_Kd= 0;	
+
 
 //----ËÙ¶È»·-----
  float Velocity,Encoder_Err,Encoder,Encoder_last,Movement=0; //ËÙ¶È£¬Îó²î£¬±àÂëÆ÷
  float Encoder_Integral;					  //±àÂëÆ÷ÊýÖµ»ý·Ö
- float kp=40,ki=0.2;	
-
-
+ float kp=5,ki=0.025;
+ 
 //----×Óº¯ÊýÉùÃ÷-----
 void UART_Proc(void);
 //void	go();
@@ -53,39 +69,60 @@ void Set_Pwm(int Moto1,int Moto2);	//¿ØÖÆPWM×îÖÕÊä³ö
 
 
 u8 test111 = 0;
+uint8_t page = 0;
 
 void key_proc(void)
 {
 /*¶Ì°´*/	
 	if(bkey[2].short_flag)
 	{
-//		Vertical_Kd -= test_num;
-		kp -= test_num;
-		ki = kp/200;
+		switch(Tiao_Who)
+		{
+			case TIAO_VERp:Vertical_Kp-= test_num_VERp;break;	
+			case TIAO_VERd:Vertical_Kd-= test_num_VERd;break;
+			case TIAO_VELp:kp					-= test_num_VELp;ki = kp/200;break;
+		}
 		
 		bkey[2].short_flag = 0;
 	}
 	if(bkey[1].short_flag)
 	{	
-//		Vertical_Kd += test_num;
-		kp += test_num;
-		ki = kp/200;
+		switch(Tiao_Who)
+		{
+			case TIAO_VERp:Vertical_Kp+= test_num_VERp;break;	
+			case TIAO_VERd:Vertical_Kd+= test_num_VERd;break;
+			case TIAO_VELp:kp					+= test_num_VELp;ki = kp/200;break;
+		}
 		
 		bkey[1].short_flag = 0;
 	}		
 /*³¤°´*/	
 	if(bkey[2].long_flag)
 	{
-		page++;
-		if(page == 2)page = 0;
-    OLED_Clear();		
+//		page++;
+		Set_Pwm(0,0);
+		Start_Flag = !Start_Flag;
+		if(Start_Flag)
+		{
+			OLED_ShowString(103,00,"on",12);     
+		}
+		else
+		{
+			OLED_ShowString(103,00,"of",12);    		
+		}
+//		if(page == 2)page = 0;
+//    OLED_Clear();		
 		
 		bkey[2].long_flag = 0;
 	}
 	if(bkey[1].long_flag)
 	{
-		if(test_num == 1)test_num = 10;
-		else test_num = 10;	
+		switch(Tiao_Who)
+		{
+			case TIAO_VERp:if(test_num_VERp == 100)test_num_VERp = 10;else test_num_VERp = 100;break;
+			case TIAO_VERd:if(test_num_VERd == 1) test_num_VERd = 0.1;else test_num_VERd = 1;break;
+			case TIAO_VELp:if(test_num_VELp == 0.01)test_num_VELp = 0.1;else test_num_VELp = 0.01;break;	
+		}		
 		
 		bkey[1].long_flag = 0;		
 	}	
@@ -112,51 +149,77 @@ void UART_Proc()
 //	 }
 
 //	 printf("Vertical_out=%d",Vertical_out);
+	printf("%d,1\r\n",PWM_out);
 }
 
 void oled_proc()
 {//ÐÐx:0~127    ÁÐy:0~63
 	if(page == 0)
 	{
-//		//============= µÚÒ»ÐÐ µ÷Ö±Á¢»·=======================//	
-//			OLED_ShowString(00,00,"P:",12);                   
-//			OLED_ShowFNum(24,00,Vertical_Kp,12);
-//		//=============  µÚ¶þÐÐ=======================//	
-//			OLED_ShowString(00,12,"D:",12);                   
-//			OLED_ShowFNum(24,12,Vertical_Kd,12);
-//		//=============  µÚÈýÐÐ=======================//	
-//			OLED_ShowString(00,24,"ro:",12);
-//		  OLED_ShowFNum(36,24,Roll,12);
-//		//=============  µÚËÄÐÐ=======================//	
-//			OLED_ShowString(00,36,"gx:",12);
-//		  OLED_ShowFNum(36,36,gyrox,12);	
-//		//=============  µÚ5ÐÐ=======================//	
-//			OLED_ShowString(00,48,"vp:",12);
-//		  OLED_ShowFNum(36,48,Vertical_out,12);			
-//		
-//			OLED_Refresh();			
-		
-
-		//============= µÚÒ»ÐÐ µ÷ËÙ¶È»·=======================//	
-			OLED_ShowString(00,00,"P:",12);                   
-			OLED_ShowFNum(24,00,kp,12);
-		//=============  µÚ¶þÐÐ=======================//	
-			OLED_ShowString(00,12,"i:",12);                   
-			OLED_ShowFNum(24,12,ki,12);
-		//=============  µÚÈýÐÐ=======================//	
-			OLED_ShowString(00,24,"le:",12);
-		  OLED_ShowSignedNum(24,24,Encoder_Left,4,12);
-		//=============  µÚËÄÐÐ=======================//	
-			OLED_ShowString(00,36,"ri:",12);
-		  OLED_ShowSignedNum(24,36,Encoder_Right,4,12);
-		//=============  µÚ5ÐÐ=======================//		
-		  OLED_ShowFNum(00,48,Roll,12);	  OLED_ShowFNum(60,48,PWM_out,12);	 
-		//=============  µÚ6ÐÐ=======================//		
-//			OLED_ShowString(00,60,"pwm",12);
-//		  OLED_ShowFNum(36,60,PWM_out,12);	
-
-			OLED_Refresh();					
-		
+		switch(Tiao_Who)
+		{
+			case TIAO_VERp:
+											//============= µÚÒ»ÐÐ µ÷Ö±Á¢»·=======================//	
+												OLED_ShowString(00,00,"P:",12);                   
+												OLED_ShowFNum(24,00,Vertical_Kp,12);
+											//=============  µÚ¶þÐÐ=======================//	
+												OLED_ShowString(00,12,"D:",12);                   
+												OLED_ShowFNum(24,12,Vertical_Kd,12);
+											//=============  µÚÈýÐÐ=======================//	
+												OLED_ShowString(00,24,"ro:",12);
+												OLED_ShowFNum(36,24,Roll,12);
+											//=============  µÚËÄÐÐ=======================//	
+												OLED_ShowString(00,36,"gx:",12);
+												OLED_ShowFNum(36,36,gyrox,12);	
+											//=============  µÚ5ÐÐ=======================//	
+												OLED_ShowString(00,48,"vp:",12);
+												OLED_ShowFNum(36,48,Vertical_out,12);			
+											
+												OLED_Refresh();	break;					
+			
+			case TIAO_VERd:
+											//============= µÚÒ»ÐÐ µ÷Ö±Á¢»·=======================//	
+												OLED_ShowString(00,00,"P:",12);                   
+												OLED_ShowFNum(24,00,Vertical_Kp,12);
+											//=============  µÚ¶þÐÐ=======================//	
+												OLED_ShowString(00,12,"D:",12);                   
+												OLED_ShowFNum(24,12,Vertical_Kd,12);
+											//=============  µÚÈýÐÐ=======================//	
+												OLED_ShowString(00,24,"ro:",12);
+												OLED_ShowFNum(36,24,Roll,12);
+											//=============  µÚËÄÐÐ=======================//	
+												OLED_ShowString(00,36,"gx:",12);
+												OLED_ShowFNum(36,36,gyrox,12);	
+											//=============  µÚ5ÐÐ=======================//	
+												OLED_ShowString(00,48,"vp:",12);
+												OLED_ShowFNum(36,48,Vertical_out,12);			
+											
+												OLED_Refresh();	break;					
+						
+			case TIAO_VELp:
+											//============= µÚÒ»ÐÐ µ÷ËÙ¶È»·=======================//	
+												OLED_ShowString(00,00,"P:",12);                   
+												OLED_ShowFNum(24,00,kp,12);
+											//=============  µÚ¶þÐÐ=======================//	
+												OLED_ShowString(00,12,"i:",12);                   
+												OLED_ShowFNum(24,12,ki,12);
+											//=============  µÚÈýÐÐ=======================//	
+												OLED_ShowString(00,24,"le:",12);
+												OLED_ShowSignedNum(24,24,Encoder_Left,4,12);
+												
+									//			OLED_ShowString(00,24,"er:",12);
+									//		  OLED_ShowSignedNum(24,24,Encoder_Err,4,12);			
+											//=============  µÚËÄÐÐ=======================//	
+												OLED_ShowString(00,36,"ri:",12);
+												OLED_ShowSignedNum(24,36,Encoder_Right,4,12);
+									//			OLED_ShowString(00,36,"ri:",12);
+									//		  OLED_ShowSignedNum(24,36,test111,4,12);			
+											//=============  µÚ5ÐÐ=======================//		
+												OLED_ShowFNum(00,48,Roll,12);	  OLED_ShowFNum(60,48,PWM_out,12);	 
+											// Ã»ÓÐµÚ6ÐÐ
+									
+												OLED_Refresh();break;									
+		}
 	}
 	else if(page == 1)
 	{
@@ -182,23 +245,22 @@ void set_up(void)
 		OLED_Init();	
   	OLED_Clear();	
 	
-  	   printf("usart ok\r\n");
+	OLED_ShowString(00,00,"mpu_dmp_init...",12);  
+	OLED_Refresh();	
   //-----DMP³õÊ¼»¯----
   while(mpu_dmp_init())//³É¹¦·µ»Ø0£¬·ñÔò·µ»Ø1
   {
 		uint8_t res;
 		res = mpu_dmp_init();
 		HAL_Delay(300);
-		printf("res=%d\r\n",res);
-	   printf("-----------------------333------------\r\n");
-
+		OLED_ShowNum(00,12,res,1,12);
+		OLED_Refresh();	
   }
-
- printf("---------------MPU init ok---------------\r\n");
+  	OLED_Clear();	
+		OLED_ShowString(103,00,"on",12);  
  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0); //´ò¿ªPC13 LED
  Start_Flag = 1; //±êÖ¾ÏµÍ³³õÊ¼»¯³É¹¦
-	
-
+//	Set_Pwm(1200,1200);
 }
 
 void loop(void)
@@ -257,7 +319,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 int Vertical(float Angle,float Gyro_Y) 
 {
 
-	Bias = Angle-(-0.23);//Ö±Á¢Æ«²î //angle = -0.23¾ÍÆ½ºâÁË
+	Bias = Angle-Med;//Ö±Á¢Æ«²î //angle = -0.23¾ÍÆ½ºâÁË
 	PWM_out = Vertical_Kp*Bias+Vertical_Kd*(Gyro_Y-0);	
 	return PWM_out;	
 } 
@@ -271,10 +333,10 @@ int Vertical(float Angle,float Gyro_Y)
 int GetVelocity(int Encoder_left,int Encoder_right)	
 {
 	
-	//--------------À¶ÑÀ¿ØÖÆ----------------
-	if(1==Flag_forward) 		    Movement = -200;
-	else if(1==Flag_retreat)    Movement = 200;
-	else							    Movement = 0;
+//	//--------------À¶ÑÀ¿ØÖÆ----------------
+//	if(1==Flag_forward) 		    Movement = -200;
+//	else if(1==Flag_retreat)    Movement = 200;
+//	else							    Movement = 0;
 	
 	
 	// 1.¼ÆËãËÙ¶ÈÆ«²î 	
@@ -396,13 +458,13 @@ void Set_Pwm(int Moto1,int Moto2)
 	{
 		if(Moto_Flag==0)	//¶þ¼¶ÅÐ¶Ï//
 		{
-			if(Moto1>0)  AIN1 = 1,AIN2 = 0;		
+			if(Moto1>0)  AIN1 = 1,AIN2 = 0;
 			else			 AIN1 = 0,AIN2 = 1;				
 			__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_1,abs(Moto1));		 
 			
-			if(Moto2>0)  BIN1 = 1,BIN2 = 0;		
-			else		    BIN1 = 0 ,BIN2 = 1;
-    		__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_4,abs(Moto1)); //0-7200
+			if(Moto2>0)  BIN1 = 0,BIN2 = 1;		
+			else		    BIN1 = 1 ,BIN2 = 0;
+    		__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_4,abs(Moto2)); //0-7200
 		}
 			
 		else//µ¹ÏÂ¾Í¹Ø±Õµç»ú

@@ -22,6 +22,7 @@
 
 /* USER CODE BEGIN 0 */
 int PWM_MAX=7200,PWM_MIN=-7200;	// PWM限幅变量
+extern uint8_t test111;
 /* USER CODE END 0 */
 
 TIM_HandleTypeDef htim1;
@@ -163,7 +164,7 @@ void MX_TIM3_Init(void)
   htim3.Init.Period = 65535;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
+  sConfig.EncoderMode = TIM_ENCODERMODE_TI1;
   sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
   sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
   sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
@@ -207,7 +208,7 @@ void MX_TIM4_Init(void)
   htim4.Init.Period = 65535;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
+  sConfig.EncoderMode = TIM_ENCODERMODE_TI1;
   sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
   sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
   sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
@@ -423,11 +424,11 @@ uint32_t Read_Encoder(uint8_t TIMX)	//编码器控制周期10ms
 	switch(TIMX)
 	{
 		case 4: //单周期位移作为速度值
-					Encoder_TIM = (short)__HAL_TIM_GET_COUNTER(&htim4);//采集编码器的值并保存
+					Encoder_TIM = -((short)__HAL_TIM_GET_COUNTER(&htim4));//采集编码器的值并保存
 				  __HAL_TIM_SET_COUNTER(&htim4,0);							//将定时器的计数值清零
 		break;	
 		
-		case 3: Encoder_TIM = -((short)__HAL_TIM_GET_COUNTER(&htim3));
+		case 3: Encoder_TIM = (short)__HAL_TIM_GET_COUNTER(&htim3);
 					__HAL_TIM_SET_COUNTER(&htim3,0);
 		break;
 		
