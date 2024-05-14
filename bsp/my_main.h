@@ -9,6 +9,8 @@
 #include "stdio.h"
 #include "OLED.h"
 #include "stdlib.h"
+#include "Grayscale.h"
+#include "string.h"
 
 #include "main.h"
 #include "i2c.h"
@@ -18,6 +20,9 @@
 
 void set_up(void);
 void loop(void);
+
+extern uint8_t xun[];
+
 
 #endif
 

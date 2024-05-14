@@ -32,8 +32,8 @@ mpu6050\oled.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 mpu6050\oled.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 mpu6050\oled.o: ../Core/Inc/mpu6050.h
 mpu6050\oled.o: ../Core/Inc/main.h
-mpu6050\oled.o: ..\Core\Inc\eMPL\inv_mpu.h
-mpu6050\oled.o: ..\Core\Inc\eMPL\inv_mpu_dmp_motion_driver.h
+mpu6050\oled.o: ../Core/Inc/eMPL/inv_mpu.h
+mpu6050\oled.o: ../Core/Inc/eMPL/inv_mpu_dmp_motion_driver.h
 mpu6050\oled.o: ..\bsp\I2CS.h
 mpu6050\oled.o: ..\bsp\OLED_Font.h
 mpu6050\oled.o: D:\work_soft\KeilCubeMxVs\MDK\Core\ARM\ARMCC\Bin\..\include\stdlib.h

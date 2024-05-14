@@ -84,7 +84,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
     /* USART3 interrupt Init */
-    HAL_NVIC_SetPriority(USART3_IRQn, 1, 0);
+    HAL_NVIC_SetPriority(USART3_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(USART3_IRQn);
   /* USER CODE BEGIN USART3_MspInit 1 */
 
@@ -118,12 +118,5 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 }
 
 /* USER CODE BEGIN 1 */
-int fputc(int c,FILE *f)
-{
-    uint8_t ch;  //定义一个无符号8位整型变量ch 并将字符C赋值给它
-    ch = c;
-    HAL_UART_Transmit(&huart3,&ch,1,1000);
-    // 调用HAL库的串口发送函数，将ch发送到USART1串口，等待时间为1000ms
-    return c;
-}
+
 /* USER CODE END 1 */

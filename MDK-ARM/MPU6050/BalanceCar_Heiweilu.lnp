@@ -30,7 +30,8 @@
 "mpu6050\my_main.o"
 "mpu6050\i2cs.o"
 "mpu6050\oled.o"
---library_type=microlib --strict --scatter "MPU6050\BalanceCar_Heiweilu.sct"
+"mpu6050\grayscale.o"
+--strict --scatter "MPU6050\BalanceCar_Heiweilu.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers
 --list "./MPU6050/\BalanceCar_Heiweilu.map" -o MPU6050\BalanceCar_Heiweilu.axf

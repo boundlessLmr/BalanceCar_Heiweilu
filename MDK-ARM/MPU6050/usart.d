@@ -32,6 +32,6 @@ mpu6050\usart.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 mpu6050\usart.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 mpu6050\usart.o: ../Core/Inc/mpu6050.h
 mpu6050\usart.o: ../Core/Inc/main.h
-mpu6050\usart.o: ..\Core\Inc\eMPL\inv_mpu.h
-mpu6050\usart.o: ..\Core\Inc\eMPL\inv_mpu_dmp_motion_driver.h
+mpu6050\usart.o: ../Core/Inc/eMPL/inv_mpu.h
+mpu6050\usart.o: ../Core/Inc/eMPL/inv_mpu_dmp_motion_driver.h
 mpu6050\usart.o: D:\work_soft\KeilCubeMxVs\MDK\Core\ARM\ARMCC\Bin\..\include\stdio.h

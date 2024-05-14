@@ -31,5 +31,5 @@ mpu6050\stm32f1xx_hal_msp.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_t
 mpu6050\stm32f1xx_hal_msp.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 mpu6050\stm32f1xx_hal_msp.o: ../Core/Inc/mpu6050.h
 mpu6050\stm32f1xx_hal_msp.o: ../Core/Inc/main.h
-mpu6050\stm32f1xx_hal_msp.o: ..\Core\Inc\eMPL\inv_mpu.h
-mpu6050\stm32f1xx_hal_msp.o: ..\Core\Inc\eMPL\inv_mpu_dmp_motion_driver.h
+mpu6050\stm32f1xx_hal_msp.o: ../Core/Inc/eMPL/inv_mpu.h
+mpu6050\stm32f1xx_hal_msp.o: ../Core/Inc/eMPL/inv_mpu_dmp_motion_driver.h

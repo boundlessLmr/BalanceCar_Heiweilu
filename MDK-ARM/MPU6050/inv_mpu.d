@@ -4,7 +4,7 @@ mpu6050\inv_mpu.o: D:\work_soft\KeilCubeMxVs\MDK\Core\ARM\ARMCC\Bin\..\include\s
 mpu6050\inv_mpu.o: D:\work_soft\KeilCubeMxVs\MDK\Core\ARM\ARMCC\Bin\..\include\stdlib.h
 mpu6050\inv_mpu.o: D:\work_soft\KeilCubeMxVs\MDK\Core\ARM\ARMCC\Bin\..\include\string.h
 mpu6050\inv_mpu.o: D:\work_soft\KeilCubeMxVs\MDK\Core\ARM\ARMCC\Bin\..\include\math.h
-mpu6050\inv_mpu.o: ..\Core\Inc\eMPL\inv_mpu.h
+mpu6050\inv_mpu.o: ../Core/Inc/eMPL/inv_mpu.h
 mpu6050\inv_mpu.o: ../Core/Inc/main.h
 mpu6050\inv_mpu.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h
 mpu6050\inv_mpu.o: ../Core/Inc/stm32f1xx_hal_conf.h
@@ -36,5 +36,5 @@ mpu6050\inv_mpu.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 mpu6050\inv_mpu.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 mpu6050\inv_mpu.o: ../Core/Inc/mpu6050.h
 mpu6050\inv_mpu.o: ../Core/Inc/main.h
-mpu6050\inv_mpu.o: ..\Core\Inc\eMPL\inv_mpu.h
-mpu6050\inv_mpu.o: ..\Core\Inc\eMPL\inv_mpu_dmp_motion_driver.h
+mpu6050\inv_mpu.o: ../Core/Inc/eMPL/inv_mpu.h
+mpu6050\inv_mpu.o: ../Core/Inc/eMPL/inv_mpu_dmp_motion_driver.h

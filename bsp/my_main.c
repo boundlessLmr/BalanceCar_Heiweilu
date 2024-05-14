@@ -1,7 +1,5 @@
 #include "my_main.h"
 
-
-
 //-----全局变量---
 extern struct Bkeys bkey[];
 
@@ -21,9 +19,16 @@ short gyrox,gyroy,gyroz;        // 角速度
 short aacx,aacy,aacz;           // 加速度
 float Med_Angle=0;//机械中值，能使得小车真正平衡住的角度 
 
-uint8_t Usart3_RX_Buf;  //串口接收数据缓存buf
+
+
+/*UART 相关*/
+char Usart3_RX_Buf[50];  //串口接收数据缓存buf
+unsigned char Usart3_TX_Buf[50];
+char temp[50]; 
+
+
+
 u8 Flag_forward = 0, Flag_retreat = 0, Flag_left = 0, Flag_right = 0;//蓝牙遥控标志
-unsigned char Usart_TX_Buf[40];
 
 
 //----调参选择-----// 
@@ -37,10 +42,9 @@ float test_num_VERd = 1;
 float test_num_VELp = 0.1;
 
 
-
 //----直立环-----// 
-float Bias, Vertical_Kp= 288,Vertical_Kd= 1.38;
-float Med = - 5.5;
+float Bias, Vertical_Kp= 300,Vertical_Kd= 1.38;
+float Med = 0;
 
 //直立环Kp,Kd均为正值 (480  2.3) * 0.6 =  288    1.38  
 //直立环Kp,Kd均为正值 (480  2.2) * 0.6 =  288    1.32  !
@@ -51,8 +55,14 @@ float Med = - 5.5;
 
 //----速度环-----
  float Velocity,Encoder_Err,Encoder,Encoder_last,Movement=0; //速度，误差，编码器
- float Encoder_Integral;					  //编码器数值积分
- float kp=5,ki=0.025;
+ float Encoder_Integral;	 //编码器数值积分
+ #define kp_val 5.4
+ float kp=kp_val,ki=kp_val/200;
+ 
+ 
+//----循迹-----
+uint8_t Black_miss_flag = 0;
+ 
  
 //----子函数声明-----
 void UART_Proc(void);
@@ -61,12 +71,18 @@ void UART_Proc(void);
 //void	backward();
 int Vertical(float Angle,float Gyro_Y);			 				//直立环
 int GetVelocity(int Encoder_left,int Encoder_right);				//速度环
-int Turn(int Encoder_Left,int Encoder_Right,float gyro);	//转向环
+int Turn(float gyro);	//转向环
 u8 Stop(signed int angle);    		//倒下保护
 void Limit(int *motoA,int *motoB);  //电机速度限幅
 void Set_Pwm(int Moto1,int Moto2);	//控制PWM最终输出
-
-
+void jizhi(void);
+void forward(void);
+void right(void);
+void left(void);
+void back(void);
+void BigRight(void);
+void BigLeft(void);
+void XunJi(void);
 
 u8 test111 = 0;
 uint8_t page = 0;
@@ -99,19 +115,18 @@ void key_proc(void)
 /*长按*/	
 	if(bkey[2].long_flag)
 	{
-//		page++;
-		Set_Pwm(0,0);
-		Start_Flag = !Start_Flag;
-		if(Start_Flag)
-		{
-			OLED_ShowString(103,00,"on",12);     
-		}
-		else
-		{
-			OLED_ShowString(103,00,"of",12);    		
-		}
-//		if(page == 2)page = 0;
-//    OLED_Clear();		
+//		Set_Pwm(0,0);
+//		Start_Flag = !Start_Flag;
+//		if(Start_Flag)
+//		{
+//			OLED_ShowString(103,00,"on",12);     
+//		}
+//		else
+//		{
+//			OLED_ShowString(103,00,"of",12);    		
+//		}
+Tiao_Who++;if(Tiao_Who== 3)Tiao_Who = 0;	
+OLED_Clear();		
 		
 		bkey[2].long_flag = 0;
 	}
@@ -133,23 +148,33 @@ void key_proc(void)
 **************************************************************************/
 void UART_Proc()
 {
-//  if((uwTick - uwTick_UART) < 1000) return;//return;结束函数
-//	uwTick_UART = uwTick;
+  if((uwTick - uwTick_UART) < 1000) return;//return;结束函数
+	uwTick_UART = uwTick;
 //	
-//	printf("kP:%.2f,kD:%.2f,flag:%d,num:%.2f\r\n",Vertical_Kp,Vertical_Kd,Start_Flag,test_num);
-//	
-//	printf("-------------------------------------------\r\n");	
+//	sprintf("kP:%.2f,kD:%.2f,flag:%d,num:%.2f\r\n",Vertical_Kp,Vertical_Kd,Start_Flag,test_num);
+//	HAL_UART_Transmit(&huart3,(uint8_t *)Usart3_TX_Buf,strlen(Usart3_TX_Buf),50);
+//	sprintf("-------------------------------------------\r\n");	
+//  HAL_UART_Transmit(&huart3,(uint8_t *)Usart3_TX_Buf,strlen(Usart3_TX_Buf),50);
 //  if ((mpu_dmp_get_data(&Pitch, &Roll, &Yaw) == 0) && (MPU_Get_Gyroscope(&gyrox,&gyroy,&gyroz) == 0)) //DMP读取欧拉角，digital motion processor数字运动处理器
 //   {
 //		//俯仰角，横滚角，偏航角
-//		 printf("pitch=%.3f   roll=%.3f   yaw=%.3f \r\n", Pitch, Roll, Yaw);   //串口打印欧拉角
-//  	 printf("gyrox=%d   gyroy=%d  gyroz=%d \r\n", gyrox, gyroy, gyroz);	// 角速度
-//		 printf("-------------------------------------------\r\n");
+//		 sprintf("pitch=%.3f   roll=%.3f   yaw=%.3f \r\n", Pitch, Roll, Yaw);   //串口打印欧拉角
+//     HAL_UART_Transmit(&huart3,(uint8_t *)Usart3_TX_Buf,strlen(Usart3_TX_Buf),50);
+//  	 sprintf("gyrox=%d   gyroy=%d  gyroz=%d \r\n", gyrox, gyroy, gyroz);	// 角速度
+//		 HAL_UART_Transmit(&huart3,(uint8_t *)Usart3_TX_Buf,strlen(Usart3_TX_Buf),50);
+//		 sprintf("-------------------------------------------\r\n");
+//     HAL_UART_Transmit(&huart3,(uint8_t *)Usart3_TX_Buf,strlen(Usart3_TX_Buf),50);
 //			
 //	 }
 
-//	 printf("Vertical_out=%d",Vertical_out);
-	printf("%d,1\r\n",PWM_out);
+//	 sprintf("Vertical_out=%d",Vertical_out);
+//	 HAL_UART_Transmit(&huart3,(uint8_t *)Usart3_TX_Buf,strlen(Usart3_TX_Buf),50);
+//	sprintf("%d,1\r\n",PWM_out);
+//	HAL_UART_Transmit(&huart3,(uint8_t *)Usart3_TX_Buf,strlen(Usart3_TX_Buf),50);
+//	sprintf("%d\n",test111);
+//	HAL_UART_Transmit(&huart3,(uint8_t *)Usart3_TX_Buf,strlen(Usart3_TX_Buf),50);
+//	sprintf(Usart3_TX_Buf,"tx ok");
+//	HAL_UART_Transmit(&huart3,(uint8_t *)Usart3_TX_Buf,strlen(Usart3_TX_Buf),50);
 }
 
 void oled_proc()
@@ -158,6 +183,7 @@ void oled_proc()
 	{
 		switch(Tiao_Who)
 		{
+
 			case TIAO_VERp:
 											//============= 第一行 调直立环=======================//	
 												OLED_ShowString(00,00,"P:",12);                   
@@ -210,10 +236,10 @@ void oled_proc()
 									//			OLED_ShowString(00,24,"er:",12);
 									//		  OLED_ShowSignedNum(24,24,Encoder_Err,4,12);			
 											//=============  第四行=======================//	
-												OLED_ShowString(00,36,"ri:",12);
-												OLED_ShowSignedNum(24,36,Encoder_Right,4,12);
-									//			OLED_ShowString(00,36,"ri:",12);
-									//		  OLED_ShowSignedNum(24,36,test111,4,12);			
+//												OLED_ShowString(00,36,"ri:",12);
+//												OLED_ShowSignedNum(24,36,Encoder_Right,4,12);
+												OLED_ShowString(00,36,"tt:",12);
+											  OLED_ShowSignedNum(24,36,test111,4,12);			
 											//=============  第5行=======================//		
 												OLED_ShowFNum(00,48,Roll,12);	  OLED_ShowFNum(60,48,PWM_out,12);	 
 											// 没有第6行
@@ -230,6 +256,8 @@ void oled_proc()
 void set_up(void)
 {
   //启动TIM初始化
+
+	
    HAL_TIM_Base_Start_IT(&htim2);//每10ms触发一次中断 
   
    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);//PWM
@@ -240,7 +268,7 @@ void set_up(void)
 	 HAL_TIM_Encoder_Start(&htim4,TIM_CHANNEL_1);
 	 HAL_TIM_Encoder_Start(&htim4,TIM_CHANNEL_2);	
 
-	HAL_UARTEx_ReceiveToIdle_IT(&huart3, (uint8_t *)Usart3_RX_Buf,50);//使能串口3接收中断	 
+	HAL_UARTEx_ReceiveToIdle_IT(&huart3, (uint8_t *)Usart3_RX_Buf,50);
 	
 		OLED_Init();	
   	OLED_Clear();	
@@ -258,16 +286,26 @@ void set_up(void)
   }
   	OLED_Clear();	
 		OLED_ShowString(103,00,"on",12);  
- HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0); //打开PC13 LED
+ HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET); //打开PC13 LED
  Start_Flag = 1; //标志系统初始化成功
+
 //	Set_Pwm(1200,1200);
+//jizhi();
+//forward();
+//BigRight();
+	
+//left();
+//BigRight();
+//BigLeft();		  	
 }
 
 void loop(void)
 {
+//forward();
 	UART_Proc();
 	key_proc();
 	oled_proc();
+//	XunJi();
 }
 
 /**************************************************************************
@@ -301,10 +339,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		//------------最终输出----------------
 	  PWM_out= Vertical_out+Velocity_out;
 	  // 3.把控制输出量加载到电机上，完成最终控制
-//		Moto1 = PWM_out+Turn_Pwm; // 左电机
-//      Moto2 = PWM_out-Turn_Pwm; // 右电机  
-			Moto1 = PWM_out; // 左电机
-      Moto2 = PWM_out; // 右电机  
+		Moto1 = PWM_out+Turn_Pwm; // 左电机
+      Moto2 = PWM_out-Turn_Pwm; // 右电机  
       Limit(&Moto1,&Moto1);     // PWM限幅 
 		  Set_Pwm(Moto1,Moto2);        // 加载到电机上 
   }
@@ -333,10 +369,10 @@ int Vertical(float Angle,float Gyro_Y)
 int GetVelocity(int Encoder_left,int Encoder_right)	
 {
 	
-//	//--------------蓝牙控制----------------
-//	if(1==Flag_forward) 		    Movement = -200;
-//	else if(1==Flag_retreat)    Movement = 200;
-//	else							    Movement = 0;
+	//--------------蓝牙控制----------------
+	if(1==Flag_forward) 		    Movement = -2000;
+	else if(1==Flag_retreat)    Movement = 2000;
+	else							    Movement = 0;
 	
 	
 	// 1.计算速度偏差 	
@@ -375,7 +411,7 @@ int GetVelocity(int Encoder_left,int Encoder_right)
 转向环：系数*Z轴角速度+系数*遥控数据
 入口：左右电机编码器测得数值，Z轴角速度
 **********************************************************************/
-int Turn(int Encoder_Left,int Encoder_Right,float gyro)
+int Turn(float gyro)
 {
    float Turn_Target,Turn_PWM,Bias,Encoder_temp,Turn_Convert=70,Turn_Count; 
    float Turn_Amplitude=100,Turn_Kp=10,Turn_Kd=0;  
@@ -399,15 +435,10 @@ int Turn(int Encoder_Left,int Encoder_Right,float gyro)
  
   return Turn_PWM;
   
-  
-  
 
 }
 
 
-
-	
-	
 /*************************************************************************** 
 函数功能：控制电机
 ******************************************************************************/
@@ -452,7 +483,6 @@ u8 Stop(signed int angle)
 void Set_Pwm(int Moto1,int Moto2)
 {
 	
-	 int dead_zone = 3000 ;		//L298N控制死区 0 - 3000
 	 Moto_Flag=Stop(Roll);	//获取是否倒下的标志
 	if(Start_Flag == 1)		//一级判断系统是否正常初始化
 	{
@@ -488,40 +518,119 @@ void Limit(int *motoA,int *motoB)
 
 	if(*motoB>7000)*motoB=7000;
 	if(*motoB<-7000)*motoB=-7000;
+} 
+
+
+void jizhi(void)
+{
+	Movement = 0;
+	Turn_Pwm = 0;
+}
+void forward(void)
+{
+	Movement = 2000;
+		Turn_Pwm = 0;
+}
+void back(void)
+{
+	Movement = -500;
+		Turn_Pwm = 0;
+}
+void right(void)
+{
+	Movement = 300;
+	Turn_Pwm = 300;
+}
+void left(void)
+{
+	Movement =300;
+	Turn_Pwm = -300;
+}
+void BigRight(void)
+{
+	Movement = 500;
+	Turn_Pwm = 500;
+}
+void BigLeft(void)
+{
+	Movement = 500;
+	Turn_Pwm = -500;
 }
 
 /**************************************************************************
-函数功能：蓝牙遥控设置USART1接收中断回调
-引脚：		 TX_PA9,RX_PA10
-**************************************************************************/
-//串口中断回调函数
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) 
+函数功能：循迹
+入口参数：无
+**************************************************************************/	
+void XunJi(void)//xun = 1 检测到白线， xun = 0 检测到黑线
 {
-//	switch(Usart3_RX_Buf)
-//    {
-//        case 0:
-//        Flag_forward = 0, Flag_retreat = 0, Flag_left = 0, Flag_right = 0;
-//        break;
-//        case 1:
-//        Flag_forward = 1, Flag_retreat = 0, Flag_left = 0, Flag_right = 0;
-//        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-//        break;
-//        case 2:
-//        Flag_forward = 0, Flag_retreat = 1, Flag_left = 0, Flag_right = 0;
-//        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-//        break;
-//        case 3:
-//        Flag_forward = 0, Flag_retreat = 0, Flag_left = 1, Flag_right = 0;
-//        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-//        break;
-//        case 4:
-//        Flag_forward = 0, Flag_retreat = 0, Flag_left = 0, Flag_right = 1;
-//        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-//        break;
-//        default:
-//        Flag_forward = 0, Flag_retreat = 0, Flag_left = 0, Flag_right = 0;
-//        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13,1);
-//        break;
-//    }
-	HAL_UARTEx_ReceiveToIdle_IT(&huart3, (uint8_t *)Usart3_RX_Buf,50);
+	Read_8PIN();
+	if(!xun[0] && !xun[1] && !xun[2] && !xun[3] && !xun[4] && !xun[5] && !xun[6] && !xun[7])//检测到全是黑线
+	{
+		jizhi();//静止
+		
+		Black_miss_flag = 1;
+	}
+	if(xun[0] || xun[1] || xun[2] || xun[3] || xun[4] || xun[5] || xun[6] || xun[7])//检测到有白线
+	{
+		Black_miss_flag = 0;
+	}
+	if((!xun[3] || !xun[4] ) && !Black_miss_flag)
+	{
+		forward();//gogogo
+	}
+	if((!xun[1] && !xun[2]) && !Black_miss_flag)
+	{
+		left();
+	}
+	if(!xun[0] && !Black_miss_flag)
+	{
+		BigLeft();
+	}
+	if((!xun[5]&&!xun[6]) && !Black_miss_flag)
+	{
+		right();
+	}
+	if(!xun[7] && !Black_miss_flag)
+	{
+		BigRight();
+	}	
+}
+
+
+/**************************************************************************
+函数功能：蓝牙遥控设置USART3接收中断回调
+引脚：		 
+**************************************************************************/
+//串口空闲中断回调函数
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)	
+{
+	if(strcmp(Usart3_RX_Buf,"1")==0)
+	{
+			jizhi();
+	}
+	else if(strcmp(Usart3_RX_Buf,"2")==0)
+	{
+			Flag_forward = 1,Flag_retreat = 0;
+	}
+	else if(strcmp(Usart3_RX_Buf,"3")==0)
+	{
+		right();
+	}	
+	else if(strcmp(Usart3_RX_Buf,"4")==0)
+	{
+			left();
+	}	
+	else if(strcmp(Usart3_RX_Buf,"5")==0)
+	{
+		  Flag_retreat = 1, Flag_forward = 0;
+	}		
+	else if(strcmp(Usart3_RX_Buf,"6")==0)
+	{
+			BigRight();
+	}	
+	else if(strcmp(Usart3_RX_Buf,"7")==0)
+	{
+		  BigLeft();
+	}			
+		HAL_UARTEx_ReceiveToIdle_IT(&huart3, (uint8_t *)Usart3_RX_Buf,50);				
 }
